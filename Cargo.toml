@@ -1,0 +1,11 @@
+[package]
+name = "archeopocket"
+version = "0.1.0"
+authors = ["Kirill Borisov <borisov.kir@gmail.com>"]
+
+[dependencies]
+pocket = "0.1.2"
+mime = "0.1.2"
+toml = "0.1.27"
+rustc-serialize = "0.3.18"
+rand = "0.3.14"
