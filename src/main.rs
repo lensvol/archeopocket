@@ -2,11 +2,13 @@ extern crate pocket;
 extern crate rustc_serialize;
 extern crate toml;
 extern crate rand;
+extern crate ansi_term;
 
 use pocket::Pocket;
 use rustc_serialize::Encodable;
 use rand::distributions::Range;
 use rand::distributions::IndependentSample;
+use ansi_term::Colour::Green;
 
 use std::io;
 use std::io::{Read, Write};
@@ -141,8 +143,10 @@ fn main() {
     for _ in 0..max_count {
         let index = between.ind_sample(&mut rng);
         let item = &result[index];
-        println!("Title: {}\nURL: {}\n",
+        println!("{}:\t{}\n{}:\t{}\n",
+                 Green.paint("Title"),
                  item.resolved_title,
+                 Green.paint("URL"),
                  item.resolved_url);
     }
 

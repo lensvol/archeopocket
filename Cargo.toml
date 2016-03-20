@@ -1,6 +1,6 @@
 [package]
 name = "archeopocket"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["Kirill Borisov <borisov.kir@gmail.com>"]
 
 [dependencies]
@@ -9,3 +9,4 @@ mime = "0.1.2"
 toml = "0.1.27"
 rustc-serialize = "0.3.18"
 rand = "0.3.14"
+ansi_term = "0.7"
