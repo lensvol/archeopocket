@@ -8,7 +8,7 @@ use pocket::Pocket;
 use rustc_serialize::Encodable;
 use rand::distributions::Range;
 use rand::distributions::IndependentSample;
-use ansi_term::Colour::Green;
+use ansi_term::Colour::{Green, Cyan};
 
 use std::io;
 use std::io::{Read, Write};
@@ -144,9 +144,9 @@ fn main() {
         let index = between.ind_sample(&mut rng);
         let item = &result[index];
         println!("{}:\t{}\n{}:\t{}\n",
-                 Green.paint("Title"),
-                 item.resolved_title,
-                 Green.paint("URL"),
+                 Cyan.paint("Title"),
+                 Green.paint(&item.resolved_title[..]),
+                 Cyan.paint("URL"),
                  item.resolved_url);
     }
 
