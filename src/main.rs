@@ -3,12 +3,14 @@ extern crate rustc_serialize;
 extern crate toml;
 extern crate rand;
 extern crate ansi_term;
+extern crate argparse;
 
 use pocket::Pocket;
 use rustc_serialize::Encodable;
 use rand::distributions::Range;
 use rand::distributions::IndependentSample;
 use ansi_term::Colour::{Green, Cyan};
+use argparse::{ArgumentParser, Store};
 
 use std::io;
 use std::io::{Read, Write};
@@ -92,8 +94,19 @@ fn acquire_pocket_instance(cfg: &Settings) -> Pocket {
 
 fn main() {
     let mut need_save_settings = false;
+    let mut cfg_fn = "archeopocket.toml".to_owned();
 
-    let mut cfg = match load_cfg("archeopocket.toml") {
+    {
+        let mut ap = ArgumentParser::new();
+        ap.set_description("Dig up long-forgotten articles from your Pocket account.");
+        ap.refer(&mut cfg_fn)
+          .add_option(&["-c", "--cfg"], Store, "Load configuration from specified file.");
+        ap.parse_args_or_exit();
+    }
+
+    // If there is no saved configuration present, we need at least consumer key
+    // to ask Pocket for an access token.
+    let mut cfg = match load_cfg(&cfg_fn) {
         Some(cfg) => cfg,
         None => {
             let consumer_key = read_line("Enter Pocket consumer key: ");
@@ -111,6 +124,8 @@ fn main() {
 
     let mut pocket = acquire_pocket_instance(&cfg);
 
+    // In case we just now acquired an access token, save it to configuration
+    // file.
     if cfg.credentials.access_token.is_none() {
         let token = pocket.access_token().unwrap().to_owned();
         cfg.credentials.access_token = Some(token);
@@ -118,7 +133,7 @@ fn main() {
     }
 
     if need_save_settings {
-        match save_cfg("archeopocket.toml", &cfg) {
+        match save_cfg(&cfg_fn, &cfg) {
             Ok(count) => println!("Wrote {} bytes to configuration file.", count),
             Err(e) => println!("Failed to save configuration file: {}", e),
         }
