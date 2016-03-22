@@ -1,24 +1,19 @@
 extern crate pocket;
-extern crate rustc_serialize;
-extern crate toml;
 extern crate rand;
 extern crate ansi_term;
 extern crate argparse;
+extern crate rustc_serialize;
+
+mod settings;
 
 use pocket::Pocket;
-use rustc_serialize::Encodable;
 use rand::distributions::Range;
 use rand::distributions::IndependentSample;
 use ansi_term::Colour::{Green, Cyan};
 use argparse::{ArgumentParser, Store};
 
 use std::io;
-use std::io::{Read, Write};
-use std::fs::{File, OpenOptions};
-
-use std::str::from_utf8;
-use toml::{decode_str, encode_str};
-
+use settings::{Credentials, Settings, save_cfg, load_cfg};
 
 fn read_line(prompt: &str) -> String {
     print!("{}", prompt);
@@ -42,46 +37,6 @@ fn authorize(consumer_key: &str) -> Pocket {
     pocket
 }
 
-#[derive(RustcEncodable, RustcDecodable, Debug)]
-pub struct Credentials {
-    consumer_key: String,
-    access_token: Option<String>,
-}
-
-#[derive(RustcEncodable, RustcDecodable, Debug)]
-pub struct Settings {
-    pub credentials: Credentials,
-    pub last_items: Option<usize>,
-    pub max_count: Option<usize>,
-}
-
-fn load_cfg(filename: &str) -> Option<Settings> {
-    let mut f = File::open(filename).unwrap();
-    let mut content: Vec<u8> = vec![];
-    match f.read_to_end(&mut content) {
-        Ok(_) => {
-            let settings = decode_str(from_utf8(&content).unwrap()).unwrap();
-            Some(settings)
-        }
-        Err(_) => None,
-    }
-
-}
-
-fn save_cfg(filename: &str, cfg: &Settings) -> Result<usize, io::Error> {
-    let content: String = encode_str(&cfg);
-
-    let mut file = OpenOptions::new()
-                       .write(true)
-                       .create(true)
-                       .open(filename)
-                       .unwrap();
-
-    try!(file.write_all(content.as_bytes()));
-
-    Ok(content.len())
-}
-
 fn acquire_pocket_instance(cfg: &Settings) -> Pocket {
     let consumer_key = &cfg.credentials.consumer_key;
 
@@ -100,7 +55,9 @@ fn main() {
         let mut ap = ArgumentParser::new();
         ap.set_description("Dig up long-forgotten articles from your Pocket account.");
         ap.refer(&mut cfg_fn)
-          .add_option(&["-c", "--cfg"], Store, "Load configuration from specified file.");
+          .add_option(&["-c", "--cfg"],
+                      Store,
+                      "Load configuration from specified file.");
         ap.parse_args_or_exit();
     }
 
